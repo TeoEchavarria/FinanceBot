@@ -26,10 +26,10 @@ async def api_key(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db = UserConfigDB()
     config = db.get_user_config(user_name)
     if config:
-        await db.update_user_config(name=user_name, openai_apikey=update.message.text, array_debts=["default"])
+        db.update_user_config(name=user_name, openai_apikey=update.message.text.replace("/apikey ",""), array_debts=["default"])
         await context.bot.send_message(chat_id=update.effective_chat.id, text="Update API Key.")
     else:
-        await db.add_user_config(name=user_name, openai_apikey=update.message.text)
+        db.add_user_config(name=user_name, openai_apikey=update.message.text.replace("/apikey ",""))
         await context.bot.send_message(chat_id=update.effective_chat.id, text="Added API Key.")
     db.close()
 
@@ -38,10 +38,10 @@ async def pockets(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db = UserConfigDB()
     config = db.get_user_config(user_name)
     if config:
-        await db.update_user_config(name=user_name, openai_apikey=None, array_debts=update.message.text.split(","))
+        db.update_user_config(name=user_name, openai_apikey=None, array_debts=update.message.text.split(","))
         await context.bot.send_message(chat_id=update.effective_chat.id, text="Update Pockets.")
     else:
-        await db.add_user_config(name=user_name, openai_apikey=None, array_debts=update.message.text.split(","))
+        db.add_user_config(name=user_name, openai_apikey=None, array_debts=update.message.text.split(","))
         await context.bot.send_message(chat_id=update.effective_chat.id, text="Added Pockets.")
     db.close()
 
@@ -50,8 +50,8 @@ async def get_pockets(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db = UserConfigDB()
     config = db.get_user_config(user_name)
     if config:
-        pockets = config[2]
-        await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Your pockets are {pockets}")
+        debts = '\n- '.join(config['array_debts'])
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Your pockets are \n- {debts}")
     else:
         await context.bot.send_message(chat_id=update.effective_chat.id, text="You have no pockets.")
     db.close()
