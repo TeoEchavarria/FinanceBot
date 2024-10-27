@@ -26,10 +26,10 @@ async def api_key(update: Update, context: ContextTypes.DEFAULT_TYPE):
     db = UserConfigDB()
     config = db.get_user_config(user_name)
     if config:
-        db.update_user_config(name=user_name, openai_apikey=update.message.text.replace("/apikey ",""), array_debts=["default"])
+        db.update_user_config(name=user_name, openai_apikey=update.message.text.replace("/apikey ",""))
         await context.bot.send_message(chat_id=update.effective_chat.id, text="Update API Key.")
     else:
-        db.add_user_config(name=user_name, openai_apikey=update.message.text.replace("/apikey ",""))
+        db.add_user_config(name=user_name, openai_apikey=update.message.text.replace("/apikey ",""), array_debts=["default"])
         await context.bot.send_message(chat_id=update.effective_chat.id, text="Added API Key.")
     db.close()
 
@@ -49,6 +49,7 @@ async def get_pockets(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.message.from_user.username
     db = UserConfigDB()
     config = db.get_user_config(user_name)
+    logger.info(config)
     if config:
         debts = '\n- '.join(config['array_debts'])
         await context.bot.send_message(chat_id=update.effective_chat.id, text=f"Your pockets are \n- {debts}")
