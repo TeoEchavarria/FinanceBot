@@ -1,0 +1,1 @@
+🤖 ¡Hola! Soy FinanceBot tu asistente financiero personal
