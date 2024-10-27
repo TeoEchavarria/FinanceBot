@@ -14,10 +14,15 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     from bot.finance_manager import FinanceManager
+    db = UserConfigDB()
+    user_name = update.message.from_user.username
     try:
-            answer = FinanceManager.get(update.message.text)
-    except Exception:
-        logger.error("Error generating answer")
+        config = db.get_user_config(user_name)
+        if not config:
+            await context.bot.send_message(chat_id=update.effective_chat.id, text="Please set your API_KEY using /apikey {your_api_key} command.")
+        answer = FinanceManager.get(update.message.text, config["openai_apikey"])
+    except Exception as e:
+        logger.error("Error generating answer for user: %s", e)
         answer = {"text": "I'm sorry I couldn't generate an answer for you. Would you like to ask me something else?"}
     await context.bot.send_message(chat_id=update.effective_chat.id, text = answer["text"])
 
