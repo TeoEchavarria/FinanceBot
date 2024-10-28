@@ -1,5 +1,5 @@
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler
-from bot.handlers import start, talk, api_key, pockets, get_pockets
+from bot.handlers import start, talk, api_key, get_pockets, add_pocket
 import os
 
 def main():
@@ -11,10 +11,10 @@ def main():
     api_key_handler = CommandHandler("apikey", callback=api_key)
     application.add_handler(api_key_handler)
 
-    pockets_handler = CommandHandler("pockets", callback=pockets)
+    pockets_handler = CommandHandler("pockets", callback=get_pockets)
     application.add_handler(pockets_handler)
 
-    get_pockets_handler = CommandHandler("getpockets", callback=get_pockets)
+    get_pockets_handler = CommandHandler("apocket", callback=add_pocket)
     application.add_handler(get_pockets_handler)
 
     talk_handler = MessageHandler(filters=None, callback=talk)
