@@ -278,9 +278,9 @@ class PocketDB:
         :param date: (Optional) Date of the transaction (YYYY-MM-DD). Defaults to today.
         :return: True if addition is successful, False otherwise.
         """
-        if transaction_type not in ('positive', 'negative'):
-            print("Error: transaction_type must be 'positive' or 'negative'.")
-            return False
+        if transaction_type == 'negative':
+            amount = -amount
+
         
         if date is None:
             date = datetime.now().strftime('%Y-%m-%d')
@@ -360,6 +360,56 @@ class PocketDB:
         else:
             print(f"Pocket '{pocket_name}' for user '{user_name}' not found.")
             return None
+    
+    def get_pocket_balance(self, user_name: str, pocket_name: str) -> float:
+        """
+        Retrieve the balance of a specific pocket.
+        
+        :param user_name: Name of the user.
+        :param pocket_name: Name of the pocket.
+        :return: Balance of the pocket.
+        """
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            SELECT id FROM pockets WHERE user_name = ? AND name = ?
+        ''', (user_name, pocket_name))
+        result = cursor.fetchone()
+        if not result:
+            print(f"Error: Pocket '{pocket_name}' for user '{user_name}' does not exist.")
+            return 0.0
+        pocket_id = result[0]
+        
+        cursor.execute('''
+            SELECT SUM(amount) FROM transactions WHERE pocket_id = ?
+        ''', (pocket_id,))
+        result = cursor.fetchone()
+        balance = result[0] if result[0] else 0.0
+        return balance
+    
+    def get_pockets_balance(self, user_name: str) -> Dict[str, float]:
+        """
+        Retrieve the balance of all pockets for a user.
+        
+        :param user_name: Name of the user.
+        :return: Dictionary containing pocket names as keys and balances as values.
+        """
+        cursor = self.conn.cursor()
+        cursor.execute('''
+            SELECT id, name FROM pockets WHERE user_name = ?
+        ''', (user_name,))
+        rows = cursor.fetchall()
+        
+        balances = {}
+        for row in rows:
+            pocket_id = row[0]
+            pocket_name = row[1]
+            cursor.execute('''
+                SELECT SUM(amount) FROM transactions WHERE pocket_id = ?
+            ''', (pocket_id,))
+            result = cursor.fetchone()
+            balance = result[0] if result[0] else 0.0
+            balances[pocket_name] = balance
+        return balances
     
     def get_transactions(self, user_name: str, pocket_name: str) -> List[Dict]:
         """

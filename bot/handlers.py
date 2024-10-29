@@ -101,3 +101,27 @@ async def add_pocket(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error("Error adding pocket: %s", e)
     finally:
         db.close()
+
+async def get_pocket_balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_name = update.message.from_user.username
+    db = PocketDB()
+    pocket = update.message.text.replace("/balance ","")
+    if pocket == "" or pocket == "/balance":
+        balance = db.get_pockets_balance(user_name)
+        
+    else:
+        balance = db.get_pocket_balance(user_name, pocket)
+        balance = {pocket: balance}
+    try:
+        header = "Key                  | Value"
+        separator = "---------------------+-----------------"
+        # Dynamically create rows for each item
+        rows = "\n".join([f"{key:<21}| {value:,.2f}" for key, value in balance.items()])
+
+        # Combine all parts into a table
+        table = f"```\n{header}\n{separator}\n{rows}\n```"
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=table, parse_mode='MarkdownV2')
+    except Exception as e:
+        logger.error("Error getting pocket balance: %s", e)
+    finally:
+        db.close()
