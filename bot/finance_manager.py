@@ -17,18 +17,18 @@ class FinanceManager:
                         "Payment": {
                                 "type": "object",
                                 "properties": {
-                                    "debt": {
+                                    "pocket_name": {
                                         "type": "string",
                                         "enum":  list_debts
                                     },
-                                    "description": { "type": "string" },
-                                    "amount": { "type": "number" },
-                                    "type": {
+                                    "transaction_type": {
                                         "type": "string",
                                         "enum": ["negative", "positive"]
-                                    }
+                                    },
+                                    "amount": { "type": "number" },
+                                    "description": { "type": "string" }
                                 },
-                                "required": ["debt", "description", "amount", "type"],
+                                "required": ["pocket_name","transaction_type", "amount", "description",  ],
                                 "additionalProperties": False
                         }
                     },
@@ -67,5 +67,4 @@ class FinanceManager:
         response_format= json_format
     )
         response = json.loads(response.choices[0].message.content)
-        print(response)
-        return response
+        return response["Payment"]

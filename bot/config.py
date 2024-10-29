@@ -135,7 +135,7 @@ class PocketDB:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 pocket_id INTEGER NOT NULL,
                 date TEXT NOT NULL,
-                transaction_type TEXT NOT NULL CHECK(transaction_type IN ('in', 'out')),
+                transaction_type TEXT NOT NULL CHECK(transaction_type IN ('positive', 'negative')),
                 amount REAL NOT NULL,
                 description TEXT,
                 FOREIGN KEY(pocket_id) REFERENCES pockets(id) ON DELETE CASCADE
@@ -272,14 +272,14 @@ class PocketDB:
         
         :param user_name: Name of the user.
         :param pocket_name: Name of the pocket.
-        :param transaction_type: 'in' for money received, 'out' for money spent.
+        :param transaction_type: 'positive' for money received, 'negative' for money spent.
         :param amount: Amount of the transaction.
         :param description: (Optional) Description of the transaction.
         :param date: (Optional) Date of the transaction (YYYY-MM-DD). Defaults to today.
         :return: True if addition is successful, False otherwise.
         """
-        if transaction_type not in ('in', 'out'):
-            print("Error: transaction_type must be 'in' or 'out'.")
+        if transaction_type not in ('positive', 'negative'):
+            print("Error: transaction_type must be 'positive' or 'negative'.")
             return False
         
         if date is None:
@@ -421,101 +421,3 @@ class PocketDB:
         Close the database connection.
         """
         self.conn.close()
-
-# Example Usage
-if __name__ == '__main__':
-    # Initialize the database
-    db = PocketDB()
-    
-    # Example user
-    user_name = 'john_doe'
-    
-    # Add a general pocket
-    db.add_pocket(
-        user_name=user_name,
-        name='Savings',
-        pocket_type='general'
-    )
-    
-    # Add a credit card pocket
-    db.add_pocket(
-        user_name=user_name,
-        name='Visa Platinum',
-        pocket_type='credit_card',
-        cut_off_date='2024-11-25',
-        payment_date='2024-12-15',
-        interest_rate=19.99
-    )
-    
-    # Add transactions to 'Savings'
-    db.add_transaction(
-        user_name=user_name,
-        pocket_name='Savings',
-        transaction_type='in',
-        amount=1500.00,
-        description='Initial deposit'
-    )
-    db.add_transaction(
-        user_name=user_name,
-        pocket_name='Savings',
-        transaction_type='out',
-        amount=200.00,
-        description='Groceries'
-    )
-    
-    # Add transactions to 'Visa Platinum'
-    db.add_transaction(
-        user_name=user_name,
-        pocket_name='Visa Platinum',
-        transaction_type='out',
-        amount=500.00,
-        description='Electronics Purchase'
-    )
-    db.add_transaction(
-        user_name=user_name,
-        pocket_name='Visa Platinum',
-        transaction_type='out',
-        amount=150.00,
-        description='Restaurant'
-    )
-    
-    # Retrieve and print all pockets for the user
-    pockets = db.get_pockets(user_name)
-    print("\nUser Pockets:")
-    for pocket in pockets:
-        print(pocket)
-    
-    # Retrieve and print transactions for 'Savings'
-    savings_transactions = db.get_transactions(user_name, 'Savings')
-    print("\n'Savings' Transactions:")
-    for txn in savings_transactions:
-        print(txn)
-    
-    # Retrieve and print transactions for 'Visa Platinum'
-    visa_transactions = db.get_transactions(user_name, 'Visa Platinum')
-    print("\n'Visa Platinum' Transactions:")
-    for txn in visa_transactions:
-        print(txn)
-    
-    # Update a pocket's details
-    db.update_pocket(
-        user_name=user_name,
-        name='Visa Platinum',
-        cut_off_date='2024-11-28',
-        payment_date='2024-12-20',
-        interest_rate=18.99
-    )
-    
-    # Retrieve and print updated pocket details
-    updated_pocket = db.get_pocket(user_name, 'Visa Platinum')
-    print("\nUpdated 'Visa Platinum' Pocket:")
-    print(updated_pocket)
-    
-    # (Optional) Delete a transaction
-    # db.delete_transaction(transaction_id=1)
-    
-    # (Optional) Delete a pocket
-    # db.delete_pocket(user_name, 'Savings')
-    
-    # Close the database connection
-    db.close()

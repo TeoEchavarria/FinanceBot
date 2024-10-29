@@ -1,5 +1,5 @@
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler
-from bot.handlers import start, talk, api_key, get_pockets, add_pocket
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler
+from bot.handlers import start, talk, api_key, get_pockets, add_pocket, confirmation
 import os
 
 def main():
@@ -19,6 +19,7 @@ def main():
 
     talk_handler = MessageHandler(filters=None, callback=talk)
     application.add_handler(talk_handler)
+    application.add_handler(CallbackQueryHandler(confirmation))
     
     application.run_polling()
 
