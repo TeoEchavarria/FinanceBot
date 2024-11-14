@@ -122,6 +122,6 @@ async def get_pocket_balance(update: Update, context: ContextTypes.DEFAULT_TYPE)
         table = f"```\n{header}\n{separator}\n{rows}\n```"
         await context.bot.send_message(chat_id=update.effective_chat.id, text=table, parse_mode='MarkdownV2')
     except Exception as e:
-        logger.error("Error getting pocket balance: %s", e)
+        logger.error("Error getting pocket balance: %s", e) # Intento
     finally:
         db.close()
