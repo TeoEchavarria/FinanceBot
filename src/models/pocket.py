@@ -8,7 +8,7 @@ class Pocket(BaseModel):
     user_id: UUID
     name: str
     balance: Decimal = Decimal('0.00')
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.now())
 
     class Config:
         orm_mode = True

@@ -9,7 +9,7 @@ class Purchase(BaseModel):
     pocket_id: UUID
     amount: Decimal
     description: str
-    date: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.now())
 
     class Config:
         orm_mode = True

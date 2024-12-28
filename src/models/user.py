@@ -7,7 +7,7 @@ class User(BaseModel):
     username: str
     email: EmailStr
     password_hash: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.now())
 
     class Config:
         orm_mode = True
