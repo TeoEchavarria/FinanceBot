@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
+from typing import Literal
 from uuid import UUID, uuid4
 from datetime import datetime
 
@@ -7,7 +8,9 @@ class User(BaseModel):
     username: str
     email: EmailStr
     password_hash: str
-    created_at: datetime = Field(default_factory=datetime.now())
+    created_at: datetime = Field(default_factory=datetime.now)
+    membresia: Literal["Free", "Pro"] = "Free"
 
     class Config:
-        orm_mode = True
+        # Desde Pydantic v2, 'orm_mode' se reemplaza por 'from_attributes'
+        from_attributes = True

@@ -7,8 +7,8 @@ class Pocket(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     user_id: UUID
     name: str
-    balance: Decimal = Decimal('0.00')
-    created_at: datetime = Field(default_factory=datetime.now())
+    balance: Decimal = Field(default_factory=lambda: Decimal('0.00'))
+    created_at: datetime = Field(default_factory=datetime.now)
 
     class Config:
-        orm_mode = True
+        from_attributes = True
