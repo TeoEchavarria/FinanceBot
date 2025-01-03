@@ -4,6 +4,8 @@ from telegram.ext import ContextTypes
 from utils.logger import LoggingUtil
 from services.voice_to_text import transcribe_voice
 from models.finance_manager import FinanceManager
+from services.database_connection import get_supabase_client
+from services.database.user_service import get_user_by_telegram_username
 from services.database.pocket_service import get_pockets_by_user
 
 logger = LoggingUtil.setup_logger()
@@ -29,14 +31,16 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         # 2. Obtener las pockets del usuario
-        pockets = get_pockets_by_user(user_name)
-
+        client = get_supabase_client()
+        user = get_user_by_telegram_username(client, user_name)
+        pockets = get_pockets_by_user(client, user["id"])
         # 3. Construir la data para FinanceManager
         finance_data = [
             user_message_text,
-            [p["name"] for p in pockets]
+            [p.name for p in pockets]
         ]
 
+        print(finance_data)
         # 4. Procesar con FinanceManager
         answer = FinanceManager.get(*finance_data)  # Devuelve un dict con Payment
 
