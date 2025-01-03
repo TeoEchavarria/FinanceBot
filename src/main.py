@@ -1,17 +1,22 @@
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 #from handlers.start_handler import start
 from handlers.talk_handler import talk
-# ... otros imports ...
+from handlers.start_handler import start
 
 def main():
-    application = ApplicationBuilder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
+    TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
-    # Handler para /start
-    # start_handler = CommandHandler("start", start)
-    # application.add_handler(start_handler)
+    # Handler to start the bot
+    start_handler = CommandHandler("start", start)
+    application.add_handler(start_handler)
 
-    # Handler para texto o voz (sin comando), cualquier mensaje que llegue
+    # Handler to talk with the bot
     talk_handler = MessageHandler(filters.ALL & ~filters.COMMAND, talk)
     application.add_handler(talk_handler)
 
