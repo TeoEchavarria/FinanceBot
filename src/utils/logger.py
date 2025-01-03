@@ -7,7 +7,7 @@ class LoggingUtil:
 
     @classmethod
     def setup_logger(cls):
-        logger = logging.getLogger('telegram-embedding-bot')
+        logger = logging.getLogger('telegram-finance-bot')
         handler = logging.StreamHandler()
         formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
         handler.setFormatter(formatter)
