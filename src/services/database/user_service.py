@@ -5,6 +5,5 @@ def get_user_by_telegram_username(client, telegram_username: str) -> Optional[di
     Aquí interactúas directamente con la base de datos (Supabase, Mongo, etc.)
     Devuelve un diccionario con datos del usuario o None si no existe.
     """
-    print(f"Buscando usuario con username: {telegram_username}")
     response = client.table("users").select("*").eq("username", telegram_username).single().execute()
     return response.data

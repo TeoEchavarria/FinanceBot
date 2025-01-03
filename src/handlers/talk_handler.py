@@ -4,13 +4,15 @@ from telegram.ext import ContextTypes
 from telegram.ext import CallbackContext
 
 from models.finance_manager import FinanceManager
+from models.purchase import Purchase
 
 from utils.logger import LoggingUtil
 
 from services.voice_to_text import transcribe_voice
 from services.database_connection import get_supabase_client
 from services.database.user_service import get_user_by_telegram_username
-from services.database.pocket_service import get_pockets_by_user
+from services.database.pocket_service import get_pockets_by_user, get_pocket_by_user_and_name
+from services.database.purchase_service import create_purchase
 
 logger = LoggingUtil.setup_logger()
 
@@ -22,10 +24,28 @@ async def confirmation(update: Update, context: CallbackContext):
         # Retrieve the last message from user_data
         user_name = context.user_data.get('user_name', None)
         last_message = context.user_data.get('last_message', 'No previous message available.')
-        print(last_message)
-        #db_pocket = PocketDB()
-        #db_pocket.add_transaction(user_name, **last_message)
-        
+        client = get_supabase_client()
+        user = get_user_by_telegram_username(client, user_name)
+        pocket = get_pocket_by_user_and_name(client, user["id"], last_message['pocket_name'])
+        transaction_type = last_message.get('transaction_type')
+        amount = last_message.get('amount', 0)
+
+        if transaction_type == "positive":
+            adjusted_amount = amount
+        elif transaction_type == "negative":
+            adjusted_amount = -amount
+        else:
+            raise ValueError(f"Invalid transaction type: {transaction_type}")
+
+        punchase = Purchase(
+            user_id=pocket.user_id, 
+            pocket_id=pocket.id, 
+            description=last_message['description'], 
+            amount=adjusted_amount, 
+            transaction_type=last_message['transaction_type']
+        )
+        create_purchase(client, punchase)
+
         message_response = f"Transaction added to pocket {last_message['pocket_name']}"
         await query.edit_message_text(text=message_response)
     # You can now use this last message in your response
@@ -63,7 +83,6 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [p.name for p in pockets]
         ]
 
-        print(finance_data)
         # 4. Procesar con FinanceManager
         answer = FinanceManager.get(*finance_data)  # Devuelve un dict con Payment
 
