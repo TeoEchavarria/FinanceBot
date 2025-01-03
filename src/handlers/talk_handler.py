@@ -1,14 +1,37 @@
 # src/handlers/talk_handler.py
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
-from utils.logger import LoggingUtil
-from services.voice_to_text import transcribe_voice
+from telegram.ext import CallbackContext
+
 from models.finance_manager import FinanceManager
+
+from utils.logger import LoggingUtil
+
+from services.voice_to_text import transcribe_voice
 from services.database_connection import get_supabase_client
 from services.database.user_service import get_user_by_telegram_username
 from services.database.pocket_service import get_pockets_by_user
 
 logger = LoggingUtil.setup_logger()
+
+async def confirmation(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+
+    if query.data == "Correct":
+        # Retrieve the last message from user_data
+        user_name = context.user_data.get('user_name', None)
+        last_message = context.user_data.get('last_message', 'No previous message available.')
+        print(last_message)
+        #db_pocket = PocketDB()
+        #db_pocket.add_transaction(user_name, **last_message)
+        
+        message_response = f"Transaction added to pocket {last_message['pocket_name']}"
+        await query.edit_message_text(text=message_response)
+    # You can now use this last message in your response
+    else:
+        await query.edit_message_text(text="Please try again.")
+
 
 async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_name = update.message.from_user.username

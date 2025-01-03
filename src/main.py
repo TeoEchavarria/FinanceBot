@@ -1,11 +1,11 @@
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 #from handlers.start_handler import start
-from handlers.talk_handler import talk
+from handlers.talk_handler import talk, confirmation
 from handlers.start_handler import start
 
 def main():
@@ -19,6 +19,7 @@ def main():
     # Handler to talk with the bot
     talk_handler = MessageHandler(filters.ALL & ~filters.COMMAND, talk)
     application.add_handler(talk_handler)
+    application.add_handler(CallbackQueryHandler(confirmation))
 
     application.run_polling()
 
