@@ -13,3 +13,8 @@ def get_purchases_by_user(user_id: str):
     client = get_supabase_client()
     response = client.table("purchases").select("*").eq("user_id", user_id).execute()
     return [Purchase(**item) for item in response.data]
+
+def get_last_transactions_by_pocket(pocket_id: str):
+    client = get_supabase_client()
+    response = client.table("purchases").select("*").eq("pocket_id", pocket_id).order("created_at").limit(5).execute()
+    return [Purchase(**item) for item in response.data]
