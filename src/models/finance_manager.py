@@ -12,7 +12,7 @@ class FinanceManager:
         if membership == "free":
             # Connect to Ollama locally
             client = OpenAI(
-                base_url="http://localhost:11411/v1",  # default Ollama port
+                base_url="http://localhost:11434/v1",  # default Ollama port
                 api_key="ollama-local"                 # can be any string
             )
         elif membership == "pro":
@@ -67,7 +67,7 @@ class FinanceManager:
 
         # Call the chat completion
         response = client.chat.completions.create(
-            model="llama3.2" if membership == "free" else "gpt-4o-mini",  
+            model="llama3.2:3b" if membership == "free" else "gpt-4o-mini",  
             messages=[
                 {
                     "role": "system",

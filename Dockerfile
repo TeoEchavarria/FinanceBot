@@ -4,35 +4,24 @@ FROM python:3.10-slim
 # Set the working directory
 WORKDIR /app
 
-# Install system dependencies needed for Ollama
-RUN apt-get update && apt-get install -y \
+# Install curl (and optionally ca-certificates) so we can fetch the Ollama install script
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    gnupg \
-    # optional: for building or debugging
-    # build-essential \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Ollama
-RUN curl -L https://cdn.ollama.ai/apt/gpg | gpg --dearmor | tee /usr/share/keyrings/ollama.gpg
-RUN echo "deb [signed-by=/usr/share/keyrings/ollama.gpg] https://cdn.ollama.ai/apt . main" > /etc/apt/sources.list.d/ollama.list
-RUN apt-get update && apt-get install -y ollama
+# Install Ollama using the official script
+RUN curl -fsSL https://ollama.com/install.sh | sh
 
-# Copy requirements and install Python dependencies
+# Copy the requirements and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
-# Copy the project files
+# Copy the rest of your project files
 COPY . .
 
-# Pull the latest Ollama version
-RUN ollama pull llama3.2:1b
-
-# Expose the default Ollama port if you need external access
-EXPOSE 11411
-
-# Copy an entrypoint script that will run Ollama in the background,
-# then start your Python application
+# Copy an entrypoint script that launches Ollama in the background, then your Python app
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
@@ -40,5 +29,5 @@ RUN chmod +x /entrypoint.sh
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Final command that starts everything
+# Final command
 CMD ["/entrypoint.sh"]

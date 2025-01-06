@@ -1,11 +1,14 @@
 #!/bin/bash
 set -e
 
-# Start Ollama in the background with your preferred model
-ollama serve --model llama3.2:1b &
+# Start Ollama
+ollama serve &
 
-# Small sleep to give Ollama some time to initialize
+# Wait for Ollama to start
 sleep 15
+
+# Pull the model at runtime
+ollama pull llama3.2:3b
 
 # Now run your Python code
 python src/main.py
