@@ -23,3 +23,8 @@ def get_pocket_by_user_and_name(user_id: str, pocket_name: str):
     if response.data != []:
         return Pocket(**response.data[0])
     return None
+
+def update_pocket_balance(pocket_id: str, amount: float):
+    client = get_supabase_client()
+    response = client.table("pockets").update({"balance": float(amount)}).eq("id", pocket_id).execute()
+    return Pocket(**response.data[0])
