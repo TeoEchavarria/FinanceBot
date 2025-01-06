@@ -11,7 +11,7 @@ from utils.logger import LoggingUtil
 from services.voice_to_text import transcribe_voice
 from services.database_connection import get_supabase_client
 from services.database.user_service import get_user_by_telegram_username
-from services.database.pocket_service import get_pockets_by_user, get_pocket_by_user_and_name
+from services.database.pocket_service import get_pockets_by_user, get_pocket_by_user_and_name, update_pocket_balance
 from services.database.purchase_service import create_purchase
 
 logger = LoggingUtil.setup_logger()
@@ -24,9 +24,8 @@ async def confirmation(update: Update, context: CallbackContext):
         # Retrieve the last message from user_data
         user_name = context.user_data.get('user_name', None)
         last_message = context.user_data.get('last_message', 'No previous message available.')
-        client = get_supabase_client()
-        user = get_user_by_telegram_username(client, user_name)
-        pocket = get_pocket_by_user_and_name(client, user["id"], last_message['pocket_name'])
+        user = get_user_by_telegram_username(user_name)
+        pocket = get_pocket_by_user_and_name(user["id"], last_message['pocket_name'])
         transaction_type = last_message.get('transaction_type')
         amount = last_message.get('amount', 0)
 
@@ -44,7 +43,10 @@ async def confirmation(update: Update, context: CallbackContext):
             amount=adjusted_amount, 
             transaction_type=last_message['transaction_type']
         )
-        create_purchase(client, punchase)
+        create_purchase(punchase)
+
+        pocket.balance += adjusted_amount
+        update_pocket_balance(pocket.id, pocket.balance)
 
         message_response = f"Transaction added to pocket {last_message['pocket_name']}"
         await query.edit_message_text(text=message_response)
@@ -73,10 +75,8 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_message_text = update.message.text
 
     try:
-        # 2. Obtener las pockets del usuario
-        client = get_supabase_client()
-        user = get_user_by_telegram_username(client, user_name)
-        pockets = get_pockets_by_user(client, user["id"])
+        user = get_user_by_telegram_username(user_name)
+        pockets = get_pockets_by_user(user["id"])
         # 3. Construir la data para FinanceManager
         finance_data = [
             user_message_text,
