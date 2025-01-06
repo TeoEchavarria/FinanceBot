@@ -80,7 +80,8 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # 3. Construir la data para FinanceManager
         finance_data = [
             user_message_text,
-            [p.name for p in pockets]
+            [p.name for p in pockets],
+            user["membresia"]
         ]
 
         # 4. Procesar con FinanceManager

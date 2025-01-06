@@ -1,27 +1,33 @@
-# Usamos una imagen base de Python liviana
+# Use a lightweight Python base image
 FROM python:3.10-slim
 
-# Establecemos el directorio de trabajo
+# Set the working directory
 WORKDIR /app
 
-# Instalamos dependencias del sistema necesarias (opcional)
-# Descomenta y ajusta la siguiente línea si necesitas paquetes del sistema
-# RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
+# Install curl (and optionally ca-certificates) so we can fetch the Ollama install script
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copiamos el archivo de dependencias
+# Install Ollama using the official script
+RUN curl -fsSL https://ollama.com/install.sh | sh
+
+# Copy the requirements and install Python dependencies
 COPY requirements.txt .
-
-# Instalamos las dependencias de Python
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
-# Copiamos todo el contenido del proyecto al directorio de trabajo
+# Copy the rest of your project files
 COPY . .
 
-# Definimos la variable de entorno para que Python no genere archivos .pyc
+# Copy an entrypoint script that launches Ollama in the background, then your Python app
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Avoid Python writing .pyc files and buffering output
 ENV PYTHONDONTWRITEBYTECODE=1
-# Definimos la variable de entorno para que Python no almacene el buffer de salida
 ENV PYTHONUNBUFFERED=1
 
-# Comando para ejecutar el bot
-CMD ["python", "src/main.py"]
+# Final command
+CMD ["/entrypoint.sh"]
