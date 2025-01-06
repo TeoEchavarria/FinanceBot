@@ -7,6 +7,7 @@ load_dotenv()
 #from handlers.start_handler import start
 from handlers.talk_handler import talk, confirmation
 from handlers.start_handler import start
+from handlers.create_pocket_handler import create_pocket
 
 def main():
     TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -15,6 +16,10 @@ def main():
     # Handler to start the bot
     start_handler = CommandHandler("start", start)
     application.add_handler(start_handler)
+
+    # Handler to create a pocket
+    create_pocket_handler = CommandHandler("addpocket", create_pocket)
+    application.add_handler(create_pocket_handler)
 
     # Handler to talk with the bot
     talk_handler = MessageHandler(filters.ALL & ~filters.COMMAND, talk)
