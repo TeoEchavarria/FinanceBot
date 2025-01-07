@@ -4,12 +4,13 @@ from telegram.ext import ContextTypes, CallbackContext
 
 from models.finance_manager import FinanceManager
 from models.purchase import Purchase
+from models.user import User
 
 from utils.logger import LoggingUtil
 from utils.decorators import requires_auth
 
 from services.voice_to_text import transcribe_voice
-from services.database.user_service import get_user_by_telegram_username
+from services.database.user_service import get_user_by_telegram_username, update_user
 from services.database.pocket_service import (
     get_pockets_by_user, 
     get_pocket_by_user_and_name, 
@@ -105,11 +106,24 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         user_name = update.message.from_user.username
 
+        try:
+            user = get_user_by_telegram_username(user_name)
+            pockets = get_pockets_by_user(user["id"])
+        except Exception as e:
+            logger.error("Error fetching user and pockets: %s", e)
+            raise e
+        
         # 1. Check if the user sent a voice note or a text message
         if update.message.voice:
             # It's a voice note
             try:
-                user_message_text = await transcribe_voice(update, context)
+                user_message_text, time = await transcribe_voice(update, context, user["audio_time"])
+                if time == -1:
+                    await context.bot.send_message(
+                        chat_id=update.effective_chat.id,
+                        text="Sorry, you don't have enough time left to send voice messages."
+                    )
+                    return
             except Exception as e:
                 logger.error("Error transcribing voice message: %s", e)
                 await context.bot.send_message(
@@ -117,17 +131,15 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     text="Sorry, I was unable to transcribe your voice memo. Please try again."
                 )
                 return
+            try: 
+                user["audio_time"] -= time
+                update_user(User(**user))
+            except Exception as e:
+                logger.error("Error updating user audio time: %s", e)
+                return
         else:
             # It's a text message
             user_message_text = update.message.text
-
-        try:
-            # 2. Get user and pockets
-            user = get_user_by_telegram_username(user_name)
-            pockets = get_pockets_by_user(user["id"])
-        except Exception as e:
-            logger.error("Error fetching user and pockets: %s", e)
-            raise e
 
         try:
             # 3. Build data for FinanceManager
