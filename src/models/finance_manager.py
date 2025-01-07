@@ -101,5 +101,4 @@ class FinanceManager:
 
         # Parse the JSON result
         data = json.loads(response.choices[0].message.content)
-        print(data)
         return data["Payments"]
