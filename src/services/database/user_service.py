@@ -28,6 +28,5 @@ def update_user(user: User) -> Optional[dict]:
     Actualiza un usuario en la base de datos y devuelve el usuario actualizado.
     """
     client = get_supabase_client()
-    user = serialize_model(user)
     response = client.table("users").update(user).eq("id", user["id"]).execute()
     return response.data

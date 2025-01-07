@@ -4,7 +4,6 @@ from telegram.ext import ContextTypes, CallbackContext
 
 from models.finance_manager import FinanceManager
 from models.purchase import Purchase
-from models.user import User
 
 from utils.logger import LoggingUtil
 from utils.decorators import requires_auth
@@ -133,7 +132,7 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return
             try: 
                 user["audio_time"] -= time
-                update_user(User(**user))
+                update_user(user)
             except Exception as e:
                 logger.error("Error updating user audio time: %s", e)
                 return
