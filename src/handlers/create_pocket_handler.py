@@ -1,6 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 from utils.logger import LoggingUtil
+from utils.decorators import requires_auth
 
 # Models 
 from models.pocket import Pocket
@@ -10,6 +11,7 @@ from services.database.pocket_service import create_pocket_service, get_pockets_
 
 logger = LoggingUtil.setup_logger()
 
+@requires_auth
 async def create_pocket(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_telegram_username = update.message.from_user.username
 

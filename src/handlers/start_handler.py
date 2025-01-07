@@ -9,7 +9,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     open(file_path, "w").close()
 
     try:
-        with open("./data/start.md", "r") as f:
+        with open("./src/data/start.md", "r") as f:
             start_message = f.read()
     except FileNotFoundError:
         start_message = "¡Bienvenido al bot! (Archivo start.md no encontrado)"

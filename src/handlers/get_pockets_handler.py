@@ -2,6 +2,7 @@ from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 from utils.logger import LoggingUtil
+from utils.decorators import requires_auth
 from services.database.user_service import get_user_by_telegram_username
 from services.database.pocket_service import (
     get_pockets_by_user as get_pockets_by_user_service,
@@ -11,6 +12,7 @@ from services.database.purchase_service import get_last_transactions_by_pocket
 
 logger = LoggingUtil.setup_logger()
 
+@requires_auth
 async def get_pockets(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_telegram_username = update.message.from_user.username
 

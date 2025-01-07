@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 #from handlers.start_handler import start
-from handlers.talk_handler import talk, confirmation
+from handlers.talk_handler import talk, payment_decision
 from handlers.start_handler import start
 
 # Pocket Handlers
@@ -31,7 +31,7 @@ def main():
     # Handler to talk with the bot
     talk_handler = MessageHandler(filters.ALL & ~filters.COMMAND, talk)
     application.add_handler(talk_handler)
-    application.add_handler(CallbackQueryHandler(confirmation))
+    application.add_handler(CallbackQueryHandler(payment_decision))
 
     application.run_polling()
 

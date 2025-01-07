@@ -41,29 +41,33 @@ class FinanceManager:
                 "schema": {
                     "type": "object",
                     "properties": {
-                        "Payment": {
-                            "type": "object",
-                            "properties": {
-                                "pocket_name": {
-                                    "type": "string",
-                                    "enum": list_debts
+                        "Payments": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "pocket_name": {
+                                        "type": "string",
+                                        "enum": list_debts  # Sustituye list_debts por tu lista real
+                                    },
+                                    "transaction_type": {
+                                        "type": "string",
+                                        "enum": ["negative", "positive"]
+                                    },
+                                    "amount": {"type": "number"},
+                                    "description": {"type": "string"}
                                 },
-                                "transaction_type": {
-                                    "type": "string",
-                                    "enum": ["negative", "positive"]
-                                },
-                                "amount": {"type": "number"},
-                                "description": {"type": "string"}
-                            },
-                            "required": ["pocket_name","transaction_type","amount","description"],
-                            "additionalProperties": False
+                                "required": ["pocket_name", "transaction_type", "amount", "description"],
+                                "additionalProperties": False
+                            }
                         }
                     },
-                    "required": ["Payment"],
+                    "required": ["Payments"],
                     "additionalProperties": False
                 }
             }
         }
+
 
         # Call the chat completion
         response = client.chat.completions.create(
@@ -97,4 +101,4 @@ class FinanceManager:
 
         # Parse the JSON result
         data = json.loads(response.choices[0].message.content)
-        return data["Payment"]
+        return data["Payments"]
