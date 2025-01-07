@@ -20,7 +20,7 @@ def requires_auth(func):
             ))
         user_created_dt = time.fromisoformat(user["created_at"]).replace(tzinfo=None)
         now_naive = time.now().replace(tzinfo=None)
-        if (now_naive - user_created_dt).days > 30:
+        if (now_naive - user_created_dt).days > 30 and user["membresia"] == "free":
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text="Sorry, your trial period has expired. Please contact the administrator."

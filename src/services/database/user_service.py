@@ -21,3 +21,13 @@ def create_user(user: User) -> Optional[dict]:
     user = serialize_model(user)
     response = client.table("users").insert(user).execute()
     return response.data
+
+def update_user(user: User) -> Optional[dict]:
+    """
+    Aquí interactúas directamente con la base de datos (Supabase, Mongo, etc.)
+    Actualiza un usuario en la base de datos y devuelve el usuario actualizado.
+    """
+    client = get_supabase_client()
+    user = serialize_model(user)
+    response = client.table("users").update(user).eq("id", user["id"]).execute()
+    return response.data
