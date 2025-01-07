@@ -6,6 +6,7 @@ from models.finance_manager import FinanceManager
 from models.purchase import Purchase
 
 from utils.logger import LoggingUtil
+from utils.decorators import requires_auth
 
 from services.voice_to_text import transcribe_voice
 from services.database.user_service import get_user_by_telegram_username
@@ -99,79 +100,91 @@ async def payment_decision(update: Update, context: CallbackContext):
             parse_mode="Markdown"
         )
 
-
+@requires_auth
 async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_name = update.message.from_user.username
-
-    # 1. Check if the user sent a voice note or a text message
-    if update.message.voice:
-        # It's a voice note
-        try:
-            user_message_text = await transcribe_voice(update, context)
-        except Exception as e:
-            logger.error("Error transcribing voice message: %s", e)
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="Lo siento, no pude transcribir tu nota de voz. Por favor, intenta de nuevo."
-            )
-            return
-    else:
-        # It's a text message
-        user_message_text = update.message.text
-
     try:
-        # 2. Get user and pockets
-        user = get_user_by_telegram_username(user_name)
-        pockets = get_pockets_by_user(user["id"])
+        user_name = update.message.from_user.username
 
-        # 3. Build data for FinanceManager
-        finance_data = [
-            user_message_text,
-            [p.name for p in pockets],
-            user["membresia"]
-        ]
+        # 1. Check if the user sent a voice note or a text message
+        if update.message.voice:
+            # It's a voice note
+            try:
+                user_message_text = await transcribe_voice(update, context)
+            except Exception as e:
+                logger.error("Error transcribing voice message: %s", e)
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text="Sorry, I was unable to transcribe your voice memo. Please try again."
+                )
+                return
+        else:
+            # It's a text message
+            user_message_text = update.message.text
 
-        # 4. Process with FinanceManager -- now returns a list of payments
-        payments = FinanceManager.get(*finance_data)
-        
-        if not payments:
-            # If no payments were extracted, just respond accordingly
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text="I couldn't find any payment details in your message."
-            )
-            return
+        try:
+            # 2. Get user and pockets
+            user = get_user_by_telegram_username(user_name)
+            pockets = get_pockets_by_user(user["id"])
+        except Exception as e:
+            logger.error("Error fetching user and pockets: %s", e)
+            raise e
 
-        # 5. Store the entire list of payments in context.user_data for the callbacks
-        context.user_data['payments'] = payments
-        context.user_data['user_name'] = user_name
-
-        # 6. For each payment, send a separate message with Confirm/Reject buttons
-        for idx, payment in enumerate(payments):
-            answer_text = (
-                f"**Payment #{idx+1}**\n"
-                f"Pocket Name: {payment['pocket_name']}\n"
-                f"Description: {payment['description']}\n"
-                f"Amount: {payment['amount']}\n"
-                f"Type: {payment['transaction_type']}"
-            )
-
-            # Inline keyboard for each payment
-            keyboard = [
-                [
-                    InlineKeyboardButton("Correct", callback_data=f"payment_correct_{idx}"),
-                    InlineKeyboardButton("Incorrect", callback_data=f"payment_incorrect_{idx}")
-                ]
+        try:
+            # 3. Build data for FinanceManager
+            finance_data = [
+                user_message_text,
+                [p.name for p in pockets],
+                user["membresia"]
             ]
-            reply_markup = InlineKeyboardMarkup(keyboard)
 
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=answer_text,
-                reply_markup=reply_markup,
-                parse_mode="Markdown"
-            )
+            # 4. Process with FinanceManager -- now returns a list of payments
+            payments = FinanceManager.get(*finance_data)
+        except Exception as e:
+            logger.error("Error processing FinanceManager: %s", e)
+            raise e
 
+        try:
+            if not payments:
+                # If no payments were extracted, just respond accordingly
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text="I couldn't find any payment details in your message."
+                )
+                return
+
+            # 5. Store the entire list of payments in context.user_data for the callbacks
+            context.user_data['payments'] = payments
+            context.user_data['user_name'] = user_name
+
+            # 6. For each payment, send a separate message with Confirm/Reject buttons
+            for idx, payment in enumerate(payments):
+                answer_text = (
+                    f"**Payment #{idx+1}**\n"
+                    f"Pocket Name: {payment['pocket_name']}\n"
+                    f"Description: {payment['description']}\n"
+                    f"Amount: {payment['amount']}\n"
+                    f"Type: {payment['transaction_type']}"
+                )
+
+                # Inline keyboard for each payment
+                keyboard = [
+                    [
+                        InlineKeyboardButton("Correct", callback_data=f"payment_correct_{idx}"),
+                        InlineKeyboardButton("Incorrect", callback_data=f"payment_incorrect_{idx}")
+                    ]
+                ]
+                reply_markup = InlineKeyboardMarkup(keyboard)
+
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=answer_text,
+                    reply_markup=reply_markup,
+                    parse_mode="Markdown"
+                )
+        except Exception as e:
+            logger.error("Error sending payment decisions: %s", e)
+            raise e
+        
     except Exception as e:
         logger.error("Error generating answer for user (%s): %s", user_name, e)
         await context.bot.send_message(
