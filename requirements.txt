@@ -21,7 +21,7 @@ hyperframe==6.0.1
 idna==3.10
 jiter==0.8.2
 multidict==6.1.0
-openai==1.58.1
+openai==1.59.3
 packaging==24.2
 postgrest==0.18.0
 propcache==0.2.1
