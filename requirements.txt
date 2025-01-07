@@ -9,6 +9,8 @@ certifi==2024.12.14
 charset-normalizer==3.4.1
 deprecation==2.1.0
 distro==1.9.0
+dnspython==2.7.0
+email_validator==2.2.0
 exceptiongroup==1.2.2
 frozenlist==1.5.0
 gotrue==2.11.0
