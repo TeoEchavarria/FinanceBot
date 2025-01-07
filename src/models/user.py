@@ -7,6 +7,7 @@ class User(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     username: str
     created_at: datetime = Field(default_factory=datetime.now)
+    audio_time: int = 0
     membresia: Literal["free", "pro"] = "free"
 
     class Config:
