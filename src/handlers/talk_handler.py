@@ -18,7 +18,7 @@ from services.database.pocket_service import (
     update_pocket_balance
 )
 from services.database.purchase_service import create_purchase
-from services.finance_manager.register_services import register_purchase
+from services.finance_manager.register_service import register_purchase
 
 logger = LoggingUtil.setup_logger()
 
