@@ -2,12 +2,14 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CallbackContext
 
-from models.finance_manager import FinanceManager
+# Models
 from models.purchase import Purchase
 
+# Utils
 from utils.logger import LoggingUtil
 from utils.decorators import requires_auth
 
+# Services
 from services.voice_to_text import transcribe_voice
 from services.database.user_service import get_user_by_telegram_username, update_user
 from services.database.pocket_service import (
@@ -16,6 +18,8 @@ from services.database.pocket_service import (
     update_pocket_balance
 )
 from services.database.purchase_service import create_purchase
+from services.finance_manager.register_service import register_purchase
+from services.finance_manager.query_service import process_finance_query
 
 logger = LoggingUtil.setup_logger()
 
@@ -137,22 +141,32 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 logger.error("Error updating user audio time: %s", e)
                 return
         else:
-            # It's a text message
             user_message_text = update.message.text
 
-        try:
-            # 3. Build data for FinanceManager
-            finance_data = [
-                user_message_text,
-                [p.name for p in pockets],
-                user["membresia"]
-            ]
 
-            # 4. Process with FinanceManager -- now returns a list of payments
-            payments = FinanceManager.get(*finance_data)
-        except Exception as e:
-            logger.error("Error processing FinanceManager: %s", e)
-            raise e
+        finance_data = [
+            user_message_text,
+            [p.name for p in pockets],
+            user["membresia"]
+        ]
+
+        if user_message_text.split()[0].lower() in ["consulta","consult"]:
+            try:
+                consult = process_finance_query(*finance_data, user["id"])
+            except Exception as e:
+                logger.error("Error processing finance query: %s", e)
+                raise e
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text= consult
+            )
+            return
+        else:
+            try:
+                payments = register_purchase(*finance_data)
+            except Exception as e:
+                logger.error("Error processing register purchase: %s", e)
+                raise e
 
         try:
             if not payments:
