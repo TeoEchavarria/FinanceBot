@@ -2,9 +2,7 @@ import json
 import os
 from openai import OpenAI
 
-class FinanceManager:
-    @staticmethod
-    def get(query: str, list_debts, membership: str) -> dict:
+def register_purchase(query: str, list_debts, membership: str) -> dict:
         """
         membership: 'free' => use local Ollama; 'pro' => normal OpenAI usage
         """
