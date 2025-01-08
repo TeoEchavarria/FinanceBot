@@ -19,6 +19,7 @@ from services.database.pocket_service import (
 )
 from services.database.purchase_service import create_purchase
 from services.finance_manager.register_service import register_purchase
+from services.finance_manager.query_service import process_finance_query
 
 logger = LoggingUtil.setup_logger()
 
@@ -142,18 +143,30 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             user_message_text = update.message.text
 
-        try:
-            
-            finance_data = [
-                user_message_text,
-                [p.name for p in pockets],
-                user["membresia"]
-            ]
 
-            payments = register_purchase(*finance_data)
-        except Exception as e:
-            logger.error("Error processing register purchase: %s", e)
-            raise e
+        finance_data = [
+            user_message_text,
+            [p.name for p in pockets],
+            user["membresia"]
+        ]
+
+        if user_message_text.split()[0].lower() in ["consulta","consult"]:
+            try:
+                consult = process_finance_query(*finance_data, user["id"])
+            except Exception as e:
+                logger.error("Error processing finance query: %s", e)
+                raise e
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text= consult
+            )
+            return
+        else:
+            try:
+                payments = register_purchase(*finance_data)
+            except Exception as e:
+                logger.error("Error processing register purchase: %s", e)
+                raise e
 
         try:
             if not payments:
