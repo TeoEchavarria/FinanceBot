@@ -14,4 +14,4 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except FileNotFoundError:
         start_message = "¡Bienvenido al bot! (Archivo start.md no encontrado)"
 
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=start_message)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=start_message, parse_mode="Markdown")
