@@ -79,7 +79,7 @@ async def payment_decision(update: Update, context: CallbackContext):
         )
         create_purchase(purchase)
 
-        pocket.balance += adjusted_amount
+        pocket.balance += float(adjusted_amount)
         update_pocket_balance(pocket.id, pocket.balance)
 
         # Edit the message to indicate it was confirmed
