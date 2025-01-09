@@ -150,7 +150,7 @@ async def talk(update: Update, context: ContextTypes.DEFAULT_TYPE):
             user["membresia"]
         ]
 
-        if user_message_text.split()[0].lower() in ["consulta","consult"]:
+        if user_message_text.split(" ")[0].lower().replace(",", "").replace(".", "") in ["consulta","consult"]:
             try:
                 consult = process_finance_query(*finance_data, user["id"])
             except Exception as e:
