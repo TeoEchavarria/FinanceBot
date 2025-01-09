@@ -17,7 +17,8 @@ def requires_auth(func):
         except:
             user = create_user(User(
                 username=telegram_username,
-            ))
+            ))[0]
+            print(user)
         user_created_dt = time.fromisoformat(user["created_at"]).replace(tzinfo=None)
         now_naive = time.now().replace(tzinfo=None)
         if (now_naive - user_created_dt).days > 30 and user["membresia"] == "free":
