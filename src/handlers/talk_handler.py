@@ -1,7 +1,7 @@
 # src/handlers/talk_handler.py
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CallbackContext
-
+from decimal import Decimal
 # Models
 from models.purchase import Purchase
 
@@ -79,7 +79,7 @@ async def payment_decision(update: Update, context: CallbackContext):
         )
         create_purchase(purchase)
 
-        pocket.balance += adjusted_amount
+        pocket.balance += Decimal(adjusted_amount)
         update_pocket_balance(pocket.id, pocket.balance)
 
         # Edit the message to indicate it was confirmed
