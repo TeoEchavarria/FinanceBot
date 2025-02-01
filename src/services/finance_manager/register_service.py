@@ -59,7 +59,7 @@ def register_purchase(query: str, list_debts, membership: str) -> dict:
 
         # Call the chat completion
         response = client.chat.completions.create(
-            model="llama3.1:8b" if membership == "free" else "gpt-4o-mini",  
+            model="deepseek-r1:7b" if membership == "free" else "gpt-4o-mini",  
             messages=[
                 {
                     "role": "system",
