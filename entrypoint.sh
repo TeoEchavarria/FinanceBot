@@ -8,7 +8,7 @@ ollama serve &
 sleep 15
 
 # Pull the model at runtime
-ollama pull llama3.1:8b
+ollama pull deepseek-r1:7b
 
 # Now run your Python code
 python src/main.py
